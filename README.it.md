@@ -5,6 +5,8 @@ Web Component (Custom Element) che mostra un dialog modale di conferma e restitu
 - Sorgente: `../js/web-requester.js`
 - Manuale HTML: `./web-requester-manual.html`
 
+![Esempio messaggio HTML <web-requester></code>](warning.png)
+
 ## Avvio rapido
 
 ### 1) Carica lo script del componente
@@ -40,7 +42,7 @@ const ok = await wr.confirm({
 
 ## Screenshot / esempio
 
-![Esempio <web-requester></code>](warning.png)
+![Esempio messaggio HTML <web-requester></code>](html.png)
 
 ## Tema (palette)
 
@@ -98,12 +100,34 @@ await WebRequester.confirm({
 
 ### `options`
 
-| campo       | tipo                                                 |        default | note                                  |
-| ----------- | ---------------------------------------------------- | -------------: | ------------------------------------- |
-| `title`   | `string`                                           | `"Conferma"` | Mostrato nella barra superiore        |
-| `message` | `string`                                           |         `""` | Testo messaggio (supporta a-capo)     |
-| `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Colore top bar + bottone “Si”       |
-| `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Override palette per singola chiamata |
+| campo       | tipo                                                 |        default | note                                                              |
+| ----------- | ---------------------------------------------------- | -------------: | ----------------------------------------------------------------- |
+| `title`   | `string`                                           | `"Conferma"` | Mostrato nella barra superiore                                    |
+| `message` | `string`                                           |         `""` | Testo messaggio (supporta a-capo)                                 |
+| `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Colore top bar + bottone “Si”                                   |
+| `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Override palette per singola chiamata                             |
+| `html`    | `boolean`                                          |      `false` | Se `true`, `message` viene inserito come HTML (`innerHTML`) |
+
+## Messaggi HTML
+
+Di default, `message` viene trattato come testo. Se ti serve formattazione, passa `html: true`.
+
+```js
+await WebRequester.confirm({
+  title: "- EXPORT ORDER -",
+  message: `
+    <div style="display:grid;gap:6px;">
+      <b>System Info</b>
+      <div>Stai per eseguire <code style="color:#a04040;font-weight:bold;">exportOrder</code>.</div>
+      <div style="color:#64748b;font-size:12px;">Questa operazione è irreversibile.</div>
+      <div style="color:#64748b;font-size:12px;">Continuare?</div>
+    </div>
+  `,
+  type: "info",
+  theme: "soft",
+  html: true,
+});
+```
 
 ## Mappatura del risultato
 

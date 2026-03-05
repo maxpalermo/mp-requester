@@ -5,6 +5,8 @@ A lightweight Web Component (Custom Element) that shows a modal confirmation dia
 - Source: `../js/web-requester.js`
 - HTML manual: `./web-requester-manual.html`
 
+![`<web-requester>` HTML message example](warning.png)
+
 ## Quick start
 
 ### 1) Load the component script
@@ -40,7 +42,7 @@ const ok = await wr.confirm({
 
 ## Screenshot / example
 
-![`<web-requester>` example](warning.png)
+![`<web-requester>` HTML message example](html.png)
 
 ## Themes (palettes)
 
@@ -104,6 +106,28 @@ await WebRequester.confirm({
 | `message` | `string`                                           |         `""` | Dialog body text (supports new lines)   |
 | `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Controls top bar + “Yes” button style |
 | `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Optional per-call palette override      |
+| `html`    | `boolean`                                          |     `false` | If `true`, `message` is inserted as HTML (`innerHTML`) |
+
+## HTML messages
+
+By default, `message` is treated as plain text. If you need formatting, pass `html: true`.
+
+```js
+await WebRequester.confirm({
+  title: "- EXPORT ORDER -",
+  message: `
+    <div style="display:grid;gap:6px;">
+      <b>System Info</b>
+      <div>You are about to run <code style="color:#a04040;font-weight:bold;">exportOrder</code>.</div>
+      <div style="color:#64748b;font-size:12px;">This operation is irreversible.</div>
+      <div style="color:#64748b;font-size:12px;">Continue?</div>
+    </div>
+  `,
+  type: "info",
+  theme: "soft",
+  html: true,
+});
+```
 
 ## Result mapping
 
