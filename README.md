@@ -40,7 +40,7 @@ const ok = await wr.confirm({
 
 ## Screenshot / example
 
-![`<web-requester>` example](image/README/1772711619108.png)
+![`<web-requester>` example](warning.png)
 
 ## Themes (palettes)
 
