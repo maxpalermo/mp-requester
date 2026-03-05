@@ -594,7 +594,7 @@ class WebRequester extends HTMLElement {
         if (resolver) resolver(!!value);
     }
 
-    confirm({ title = "Conferma", message = "", type = "info", theme = undefined } = {}) {
+    confirm({ title = "Conferma", message = "", type = "info", theme = undefined, html = false } = {}) {
         if (!this._dialog) this.connectedCallback();
         if (this._resolver) {
             return Promise.reject(new Error("WebRequester: another request is already pending"));
@@ -603,7 +603,9 @@ class WebRequester extends HTMLElement {
         if (theme !== undefined) this._applyTheme(theme);
         const nextTitle = String(title ?? "");
         if (this._topbarTitle) this._topbarTitle.textContent = nextTitle;
-        this._messageEl.textContent = String(message ?? "");
+        const nextMessage = String(message ?? "");
+        if (html) this._messageEl.innerHTML = nextMessage;
+        else this._messageEl.textContent = nextMessage;
         this._setType(type);
 
         return new Promise((resolve) => {
@@ -679,3 +681,22 @@ if (!customElements.get("web-requester")) {
 }
 
 window.WebRequester = WebRequester;
+
+async function doRequest(title, message, type = "info", html = false, theme = "soft") {
+    const value = await WebRequester.confirm({
+        title: title || "Conferma",
+        message: message,
+        type: type,
+        theme: theme,
+        html: html,
+    });
+
+    return value;
+}
+
+function initRequester() {
+    wr = document.createElement("web-requester");
+    document.body.appendChild(wr);
+
+    WebRequester._getSingleton().setTheme("soft");
+}
