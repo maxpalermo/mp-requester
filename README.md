@@ -10,7 +10,7 @@ A lightweight Web Component (Custom Element) that shows a modal confirmation dia
 ### 1) Load the component script
 
 ```html
-<script src="/modules/mpexportdocuments/views/asset/js/web-requester.js"></script>
+<script src="asset/js/web-requester.js"></script>
 ```
 
 ### 2) Use the singleton (recommended)
@@ -37,6 +37,10 @@ const ok = await wr.confirm({
   type: "info"
 });
 ```
+
+## Screenshot / example
+
+![`<web-requester>` example](image/README/1772711619108.png)
 
 ## Themes (palettes)
 
@@ -94,12 +98,12 @@ await WebRequester.confirm({
 
 ### `options`
 
-| field | type | default | notes |
-|---|---|---:|---|
-| `title` | `string` | `"Conferma"` | Shown in the top bar |
-| `message` | `string` | `""` | Dialog body text (supports new lines) |
-| `type` | `"info" \| "success" \| "warning" \| "danger"` | `"info"` | Controls top bar + “Yes” button style |
-| `theme` | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` | `undefined` | Optional per-call palette override |
+| field       | type                                                 |        default | notes                                   |
+| ----------- | ---------------------------------------------------- | -------------: | --------------------------------------- |
+| `title`   | `string`                                           | `"Conferma"` | Shown in the top bar                    |
+| `message` | `string`                                           |         `""` | Dialog body text (supports new lines)   |
+| `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Controls top bar + “Yes” button style |
+| `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Optional per-call palette override      |
 
 ## Result mapping
 

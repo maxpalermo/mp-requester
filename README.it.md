@@ -10,7 +10,7 @@ Web Component (Custom Element) che mostra un dialog modale di conferma e restitu
 ### 1) Carica lo script del componente
 
 ```html
-<script src="/modules/mpexportdocuments/views/asset/js/web-requester.js"></script>
+<script src="asset/js/web-requester.js"></script>
 ```
 
 ### 2) Usa il singleton (consigliato)
@@ -37,6 +37,10 @@ const ok = await wr.confirm({
   type: "info"
 });
 ```
+
+## Screenshot / esempio
+
+![Esempio <web-requester></code>](warning.png)
 
 ## Tema (palette)
 
@@ -94,12 +98,12 @@ await WebRequester.confirm({
 
 ### `options`
 
-| campo | tipo | default | note |
-|---|---|---:|---|
-| `title` | `string` | `"Conferma"` | Mostrato nella barra superiore |
-| `message` | `string` | `""` | Testo messaggio (supporta a-capo) |
-| `type` | `"info" \| "success" \| "warning" \| "danger"` | `"info"` | Colore top bar + bottone “Si” |
-| `theme` | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` | `undefined` | Override palette per singola chiamata |
+| campo       | tipo                                                 |        default | note                                  |
+| ----------- | ---------------------------------------------------- | -------------: | ------------------------------------- |
+| `title`   | `string`                                           | `"Conferma"` | Mostrato nella barra superiore        |
+| `message` | `string`                                           |         `""` | Testo messaggio (supporta a-capo)     |
+| `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Colore top bar + bottone “Si”       |
+| `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Override palette per singola chiamata |
 
 ## Mappatura del risultato
 
