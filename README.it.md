@@ -5,7 +5,7 @@ Web Component (Custom Element) che mostra un dialog modale di conferma e restitu
 - Sorgente: `../js/web-requester.js`
 - Manuale HTML: `./web-requester-manual.html`
 
-![Esempio messaggio HTML <web-requester></code>](warning.png)
+![Esempio messaggio HTML `<web-requester>`](warning.png)
 
 ## Avvio rapido
 
@@ -42,7 +42,7 @@ const ok = await wr.confirm({
 
 ## Screenshot / esempio
 
-![Esempio messaggio HTML <web-requester></code>](html.png)
+![Esempio messaggio HTML `<web-requester>`](html.png)
 
 ## Tema (palette)
 
@@ -88,6 +88,10 @@ await WebRequester.confirm({
 - `wr.success(options | message): Promise<boolean>`
 - `wr.warning(options | message): Promise<boolean>`
 - `wr.danger(options | message): Promise<boolean>`
+- `wr.error(options | message): Promise<boolean>`
+- `wr.ok(options): Promise<void>`
+- `wr.doWait(title="Attendere", message="Operazione in corso...", type="info", html=false, theme="soft"): Promise<void>`
+- `wr.hideWait(): void`
 - `wr.setTheme(theme): void`
 
 ### Metodi statici (singleton)
@@ -97,6 +101,10 @@ await WebRequester.confirm({
 - `WebRequester.success(options | message): Promise<boolean>`
 - `WebRequester.warning(options | message): Promise<boolean>`
 - `WebRequester.danger(options | message): Promise<boolean>`
+- `WebRequester.error(options | message): Promise<boolean>`
+- `WebRequester.ok(options): Promise<void>`
+- `WebRequester.doWait(title="Attendere", message="Operazione in corso...", type="info", html=false, theme="soft"): Promise<void>`
+- `WebRequester.hideWait(): void`
 
 ### `options`
 
@@ -107,6 +115,33 @@ await WebRequester.confirm({
 | `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Colore top bar + bottone “Si”                                   |
 | `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Override palette per singola chiamata                             |
 | `html`    | `boolean`                                          |      `false` | Se `true`, `message` viene inserito come HTML (`innerHTML`) |
+
+## Avviso con solo OK
+
+Se ti serve solo avvisare l’utente (senza Si/No), usa `ok()`.
+
+```js
+await WebRequester.ok({
+  title: "Avviso",
+  message: "Export completato correttamente",
+  type: "success",
+  theme: "soft",
+});
+```
+
+## Attesa / caricamento (spinner)
+
+Per mostrare una schermata modale di attesa senza bottoni, usa `doWait()` e chiudi con `hideWait()`.
+
+```js
+WebRequester.doWait("Attendere", "Esportazione in corso...", "info", false, "soft");
+
+try {
+  // operazione lunga
+} finally {
+  WebRequester.hideWait();
+}
+```
 
 ## Messaggi HTML
 

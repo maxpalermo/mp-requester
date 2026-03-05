@@ -13,6 +13,15 @@ class WebRequester extends HTMLElement {
         this._btnNo = null;
         this._btnYesIcon = null;
         this._btnNoIcon = null;
+        this._btnYesText = null;
+        this._btnNoText = null;
+        this._btnYesKeyhint = null;
+        this._btnNoKeyhint = null;
+
+        this._defaultYesText = "";
+        this._defaultNoText = "";
+        this._defaultYesKeyhint = "";
+        this._defaultNoKeyhint = "";
 
         this._onCancel = null;
         this._onClose = null;
@@ -20,6 +29,8 @@ class WebRequester extends HTMLElement {
         this._onNo = null;
 
         this._ignoreNextClose = false;
+
+        this._isWaiting = false;
     }
 
     static get observedAttributes() {
@@ -168,6 +179,11 @@ class WebRequester extends HTMLElement {
                     display: contents;
                 }
 
+                @keyframes wr-spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+
                 :host([data-theme="soft"]) {
                     --wr-info-color: var(--soft-info-color);
                     --wr-info-bg: var(--soft-info-bg);
@@ -283,6 +299,14 @@ class WebRequester extends HTMLElement {
                     gap: 14px;
                 }
 
+                .card[data-mode="wait"] .actions {
+                    display: none;
+                }
+
+                .card[data-mode="ok"] #btnNo {
+                    display: none;
+                }
+
                 .topbar {
                     height: 44px;
                     display: flex;
@@ -316,6 +340,10 @@ class WebRequester extends HTMLElement {
                 .topbar .tb-icon svg {
                     width: 32px;
                     height: 32px;
+                }
+
+                .topbar .tb-icon svg.wr-spinner {
+                    animation: wr-spin 0.9s linear infinite;
                 }
 
                 .topbar .tb-title {
@@ -486,13 +514,13 @@ class WebRequester extends HTMLElement {
                         <div class="actions">
                             <button type="button" class="btn-no" id="btnNo" value="no">
                                 <span class="btn-icon" id="btnNoIcon" aria-hidden="true"></span>
-                                <span>No</span>
-                                <span class="keyhint">Esc</span>
+                                <span id="btnNoText">No</span>
+                                <span class="keyhint" id="btnNoKeyhint">Esc</span>
                             </button>
                             <button type="button" class="btn-yes" id="btnYes" value="yes">
                                 <span class="btn-icon" id="btnYesIcon" aria-hidden="true"></span>
-                                <span>Si</span>
-                                <span class="keyhint">Invio</span>
+                                <span id="btnYesText">Si</span>
+                                <span class="keyhint" id="btnYesKeyhint">Invio</span>
                             </button>
                         </div>
                     </div>
@@ -511,10 +539,23 @@ class WebRequester extends HTMLElement {
         this._btnNo = this.shadowRoot.getElementById("btnNo");
         this._btnYesIcon = this.shadowRoot.getElementById("btnYesIcon");
         this._btnNoIcon = this.shadowRoot.getElementById("btnNoIcon");
+        this._btnYesText = this.shadowRoot.getElementById("btnYesText");
+        this._btnNoText = this.shadowRoot.getElementById("btnNoText");
+        this._btnYesKeyhint = this.shadowRoot.getElementById("btnYesKeyhint");
+        this._btnNoKeyhint = this.shadowRoot.getElementById("btnNoKeyhint");
+
+        this._defaultYesText = this._btnYesText?.textContent ?? "";
+        this._defaultNoText = this._btnNoText?.textContent ?? "";
+        this._defaultYesKeyhint = this._btnYesKeyhint?.textContent ?? "";
+        this._defaultNoKeyhint = this._btnNoKeyhint?.textContent ?? "";
 
         this._onYes = () => this._resolve(true);
         this._onNo = () => this._resolve(false);
         this._onCancel = (e) => {
+            if (this._isWaiting) {
+                e.preventDefault();
+                return;
+            }
             e.preventDefault();
             this._resolve(false);
         };
@@ -523,6 +564,7 @@ class WebRequester extends HTMLElement {
                 this._ignoreNextClose = false;
                 return;
             }
+            if (this._isWaiting) return;
             if (this._resolver) this._resolve(false);
         };
 
@@ -534,6 +576,15 @@ class WebRequester extends HTMLElement {
         this._setButtonIcons();
         this._applyTheme(this.getAttribute("theme"));
         this._setType("info");
+    }
+
+    _setButtonsDefault() {
+        const card = this._dialog?.querySelector(".card");
+        if (card) card.removeAttribute("data-mode");
+        if (this._btnYesText) this._btnYesText.textContent = this._defaultYesText;
+        if (this._btnNoText) this._btnNoText.textContent = this._defaultNoText;
+        if (this._btnYesKeyhint) this._btnYesKeyhint.textContent = this._defaultYesKeyhint;
+        if (this._btnNoKeyhint) this._btnNoKeyhint.textContent = this._defaultNoKeyhint;
     }
 
     disconnectedCallback() {
@@ -561,6 +612,11 @@ class WebRequester extends HTMLElement {
         this._btnYes.dataset.type = normalized;
         if (this._topbar) this._topbar.dataset.type = normalized;
         if (this._topbarIcon) this._topbarIcon.innerHTML = topbarSvg;
+    }
+
+    _setWaitIcon() {
+        const spinnerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="wr-spinner"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+        if (this._topbarIcon) this._topbarIcon.innerHTML = spinnerSvg;
     }
 
     _setButtonIcons() {
@@ -599,7 +655,11 @@ class WebRequester extends HTMLElement {
         if (this._resolver) {
             return Promise.reject(new Error("WebRequester: another request is already pending"));
         }
+        if (this._isWaiting) {
+            return Promise.reject(new Error("WebRequester: wait mode is active"));
+        }
 
+        this._setButtonsDefault();
         if (theme !== undefined) this._applyTheme(theme);
         const nextTitle = String(title ?? "");
         if (this._topbarTitle) this._topbarTitle.textContent = nextTitle;
@@ -622,26 +682,114 @@ class WebRequester extends HTMLElement {
         });
     }
 
+    ok({ title = "Avviso", message = "", type = "success", theme = undefined, html = false, okText = "OK" } = {}) {
+        if (!this._dialog) this.connectedCallback();
+        if (this._resolver) {
+            return Promise.reject(new Error("WebRequester: another request is already pending"));
+        }
+        if (this._isWaiting) {
+            return Promise.reject(new Error("WebRequester: wait mode is active"));
+        }
+
+        this._setButtonsDefault();
+        const card = this._dialog?.querySelector(".card");
+        if (card) card.dataset.mode = "ok";
+        if (this._btnYesText) this._btnYesText.textContent = String(okText ?? "OK");
+
+        if (theme !== undefined) this._applyTheme(theme);
+        if (this._topbarTitle) this._topbarTitle.textContent = String(title ?? "");
+        const nextMessage = String(message ?? "");
+        if (html) this._messageEl.innerHTML = nextMessage;
+        else this._messageEl.textContent = nextMessage;
+        this._setType(type);
+
+        return new Promise((resolve) => {
+            this._resolver = () => resolve();
+            this._dialog.showModal();
+
+            setTimeout(() => {
+                try {
+                    this._btnYes?.focus();
+                } catch {
+                    // ignore
+                }
+            }, 0);
+        });
+    }
+
+    doWait(title = "Attendere", message = "Operazione in corso...", type = "info", html = false, theme = "soft") {
+        if (!this._dialog) this.connectedCallback();
+        if (this._resolver) {
+            return Promise.reject(new Error("WebRequester: another request is already pending"));
+        }
+
+        this._isWaiting = true;
+        if (theme !== undefined) this._applyTheme(theme);
+        if (this._topbarTitle) this._topbarTitle.textContent = String(title ?? "");
+        const nextMessage = String(message ?? "");
+        if (html) this._messageEl.innerHTML = nextMessage;
+        else this._messageEl.textContent = nextMessage;
+
+        const card = this._dialog?.querySelector(".card");
+        if (card) card.dataset.mode = "wait";
+
+        this._setType(type);
+        this._setWaitIcon();
+
+        try {
+            if (!this._dialog.open) this._dialog.showModal();
+        } catch {
+            // ignore
+        }
+
+        return Promise.resolve();
+    }
+
+    hideWait() {
+        if (!this._dialog) return;
+        this._isWaiting = false;
+        const card = this._dialog?.querySelector(".card");
+        if (card) card.removeAttribute("data-mode");
+        try {
+            this._ignoreNextClose = true;
+            this._dialog.close();
+        } catch {
+            // ignore
+        }
+    }
+
+    _normalizeOpts(opts) {
+        if (opts && typeof opts === "object") return opts;
+        if (typeof opts === "string") return { message: opts };
+        return {};
+    }
+
     info(opts = {}) {
-        const o = opts && typeof opts === "object" ? opts : { message: String(opts ?? "") };
+        const o = this._normalizeOpts(opts);
         const title = o.title ?? "Informazione";
         return this.confirm({ ...o, title, type: "info" });
     }
 
     warning(opts = {}) {
-        const o = opts && typeof opts === "object" ? opts : { message: String(opts ?? "") };
+        const o = this._normalizeOpts(opts);
         const title = o.title ?? "Attenzione";
         return this.confirm({ ...o, title, type: "warning" });
     }
 
     danger(opts = {}) {
-        const o = opts && typeof opts === "object" ? opts : { message: String(opts ?? "") };
+        const o = this._normalizeOpts(opts);
+        const title = o.title ?? "Errore";
+        return this.confirm({ ...o, title, type: "danger" });
+    }
+
+    error(opts = {}) {
+        const o = this._normalizeOpts(opts);
         const title = o.title ?? "Errore";
         return this.confirm({ ...o, title, type: "danger" });
     }
 
     success(opts = {}) {
-        const o = opts && typeof opts === "object" ? opts : { message: String(opts ?? "") };
+        const o = this._normalizeOpts(opts);
         const title = o.title ?? "Operazione completata";
         return this.confirm({ ...o, title, type: "success" });
     }
@@ -671,8 +819,30 @@ class WebRequester extends HTMLElement {
         return WebRequester._getSingleton().danger(opts);
     }
 
+    static error(opts) {
+        return WebRequester._getSingleton().error(opts);
+    }
+
     static success(opts) {
         return WebRequester._getSingleton().success(opts);
+    }
+
+    static ok(opts) {
+        const o = WebRequester._getSingleton()._normalizeOpts(opts);
+        return WebRequester._getSingleton().ok(o);
+    }
+
+    static alert(opts) {
+        const o = WebRequester._getSingleton()._normalizeOpts(opts);
+        return WebRequester._getSingleton().ok(o);
+    }
+
+    static doWait(title = "Attendere", message = "Operazione in corso...", type = "info", html = false, theme = "soft") {
+        return WebRequester._getSingleton().doWait(title, message, type, html, theme);
+    }
+
+    static hideWait() {
+        return WebRequester._getSingleton().hideWait();
     }
 }
 

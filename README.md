@@ -88,6 +88,10 @@ await WebRequester.confirm({
 - `wr.success(options | message): Promise<boolean>`
 - `wr.warning(options | message): Promise<boolean>`
 - `wr.danger(options | message): Promise<boolean>`
+- `wr.error(options | message): Promise<boolean>`
+- `wr.ok(options): Promise<void>`
+- `wr.doWait(title="Please wait", message="Operation in progress...", type="info", html=false, theme="soft"): Promise<void>`
+- `wr.hideWait(): void`
 - `wr.setTheme(theme): void`
 
 ### Static (singleton) methods
@@ -97,6 +101,10 @@ await WebRequester.confirm({
 - `WebRequester.success(options | message): Promise<boolean>`
 - `WebRequester.warning(options | message): Promise<boolean>`
 - `WebRequester.danger(options | message): Promise<boolean>`
+- `WebRequester.error(options | message): Promise<boolean>`
+- `WebRequester.ok(options): Promise<void>`
+- `WebRequester.doWait(title="Please wait", message="Operation in progress...", type="info", html=false, theme="soft"): Promise<void>`
+- `WebRequester.hideWait(): void`
 
 ### `options`
 
@@ -107,6 +115,33 @@ await WebRequester.confirm({
 | `type`    | `"info" \| "success" \| "warning" \| "danger"`        |     `"info"` | Controls top bar + “Yes” button style |
 | `theme`   | `"soft" \| "bold" \| "pastel" \| "elegant" \| "glass"` |  `undefined` | Optional per-call palette override      |
 | `html`    | `boolean`                                          |     `false` | If `true`, `message` is inserted as HTML (`innerHTML`) |
+
+## OK-only notice
+
+If you only need to notify the user (no Yes/No), use `ok()`.
+
+```js
+await WebRequester.ok({
+  title: "Notice",
+  message: "Export completed successfully",
+  type: "success",
+  theme: "soft",
+});
+```
+
+## Wait / loading modal (spinner)
+
+To show a modal waiting state without buttons, use `doWait()` and close it with `hideWait()`.
+
+```js
+WebRequester.doWait("Please wait", "Export in progress...", "info", false, "soft");
+
+try {
+  // long operation
+} finally {
+  WebRequester.hideWait();
+}
+```
 
 ## HTML messages
 
